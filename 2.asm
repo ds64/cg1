@@ -1,44 +1,47 @@
-; EXAMPLE.ASM - пример простейших начальных установок входа 
-		;в графический режим
 	.model  small
 	.code
 
 	cnt dw ?
+	y dw 40
 
-	mov	ax,4h	;инициализация графического
-	int	10h				;режима
+	mov	ax,4h
+	int	10h
 
 	mov ah,0Bh
 	mov bh,01h
 	mov bl,00h
-	int 10h	
+	int 10h
 
 	mov ah,0
 	mov bh,0
 	mov bl,0
 
-	mov	ax, 0BA00h
-	mov es,ax				;видеопамяти в
-	mov bx,3920
+	mov	ax, 0B800h
+	mov es, ax
+
+	mov ax, y
+	mov bx, 80
+	mul bx
+
 	mov cnt, 0
 
 render:
-	mov bx, 3920
-	mov cx, bx
+	mov cx, ax
 	add cx, cnt
-	mov bx,cx
-	mov es:[bx], 0AAh
+	mov bx, cx
+	mov dx, 0AAh
+	mov es:[bx], dx
 	add cnt, 1
 	cmp cnt, 20
 	jl render
 
-	xor	ax,ax				;ожидание нажатия клавиши
+	xor	ax,ax
 	int	16h
 
 	mov ax,3h
 	int 10h
 
-	mov	ax,4c00h			;выход из графики с возвратом
-	int	21h				;в предыдущий режим
+	mov	ax,4c00h
+	int	21h
 
 	end
