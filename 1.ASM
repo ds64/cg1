@@ -4,7 +4,6 @@
 	bitmask db 128,32,8,2
 	x dw 10
 	y dw 11
-	count dw ?
 
 .code
 
@@ -19,8 +18,8 @@
 	mov bl,00h
 	int 10h
 
-	mov ax,0B800h      ;указываем на видеобуфер
-	mov es,ax          ;
+	mov ax,0B800h
+	mov es,ax
 
 	mov bx, x
 	mov ax, y
@@ -50,15 +49,15 @@ render:
 	mov si,dx
 	mov al,bitmask+[si]  ; в al - маска
 
-	mov es:[bx],ax     ;выводим точку
+	mov es:[bx],ax
 
-	xor ax,ax			;ожидание нажатия клавиши
-	int 16h
+	xor	ax, ax
+	int	16h
 
-	mov ax,3h
+	mov ax, 3h
 	int 10h
 
-	mov ax,4c00h		;выход из графики с возвратом
-	int 21h			;в предыдущий режим
+	mov ax,4c00h
+	int 21h
 
-end
+	end

@@ -1,55 +1,81 @@
-; EXAMPLE.ASM - пример простейших начальных установок входа 
-		;в графический режим
-	.model  small
-	.code
+.model  small
 
-	cnt dw ?
+.data
+		bitmask db 128,32,8,2
+		x dw 255
+		y1 dw 11
+		y2 dw 180
+		count dw ?
 
-	mov	ax,4h	;инициализация графического
-	int	10h				;режима
+.code
 
-	mov ah,0Bh
-	mov bh,01h
-	mov bl,00h
-	int 10h	
+		mov ax,@data
+		mov ds,ax
 
-	mov	ax, 0B800h
-	mov 	es,ax				;видеопамяти в
-	mov bx, 0
-	mov cnt, 0
+		mov ax, 4h
+		int 10h
 
-render1:
-	mov bx, 0
-	mov cx, bx
-	add cx, cnt
-	mov bx,cx
-	mov es:[bx], 80h
-	add cnt, 80
-	cmp cnt, 6000
-	jl render1
+		mov ah,0Bh
+		mov bh,01h
+		mov bl,00h
+		int 10h
 
-	mov	ax, 0BA00h
-	mov 	es,ax
-	mov bx, 0
-	mov cnt, 0	
+		mov ax,y1
+		mov count,ax
 
-render2:
-	mov bx, 0
-	mov cx, bx
-	add cx, cnt
-	mov bx,cx
-	mov es:[bx], 80h
-	add cnt, 80
-	cmp cnt, 6000
-	jl render2
+		init:
 
-	xor	ax,ax				;ожидание нажатия клавиши
-	int	16h
+		mov ax,0B800h
+		mov es,ax
 
-	mov ax,3h
-	int 10h
+		mov bx, x
+		mov ax, count
 
-	mov	ax,4c00h			;выход из графики с возвратом
-	int	21h				;в предыдущий режим
+		mov dx, bx
+		and dx, 03h
+		mov cl, 2
+		shr bx, cl ;bx = x/4
 
-	end
+		mov cx, ax
+		and cx, 01h
+		cmp cx, 0
+		jz render
+		add bx, 2000h
+
+render:
+		mov cl, 1
+		shr ax, cl ;ax = y/2
+		mov cl, 4
+		sal ax, cl ;ax=(y/2)*2^4, bx=x/4
+		add bx, ax
+		mov cl, 2
+		sal ax, cl ;ax=((y-1)/2)*2^6, bx=x/4 + ((y-1)/2)*2^4
+		add bx, ax
+
+		xor ax,ax
+		mov si,dx
+		mov al,bitmask+[si]  ; в al - маска
+
+		mov es:[bx],ax
+
+		inc count
+		mov ax,count
+		cmp ax,y2
+		jg endrender
+		jmp init
+
+endrender:
+
+		xor	ax, ax
+		int	16h
+
+		mov ax, 3h
+		int 10h
+
+		mov ax,4c00h
+		int 21h
+
+		mov	ax, 4c00h
+		int	21h
+
+end
